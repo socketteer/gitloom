@@ -4,6 +4,32 @@ GitLoom is a command-line tool that generates text continuations using the Anthr
 
 ---
 
+## **Important Usage Notes**
+
+- GitLoom creates a new Git repository in the directory where you run it
+- Each text file and its version history should be in its own directory
+- Do not run GitLoom in an existing Git repository, as this will cause conflicts
+- Create a new directory for each text project you want to work on
+
+For example:
+```bash
+# Good: Create separate directories for different projects
+mkdir my-story
+cd my-story
+gitloom "Once upon a time..."
+
+# Later, for a different project:
+mkdir my-essay
+cd my-essay
+gitloom "The impact of AI..."
+
+# Bad: Don't run in an existing Git repository
+cd my-existing-git-project  # Don't do this!
+gitloom  # This would conflict with your existing .git directory
+```
+
+---
+
 ## **Installation**
 
 1. Install Python 3.
