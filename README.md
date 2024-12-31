@@ -150,7 +150,12 @@ git checkout -b new-branch-name
    git checkout HEAD~2
    ```
 
-4. Generate a new continuation from the rewound state:
+4. Check the full text of the rewound state:
+   ```bash
+   cat untitled.txt
+   ```
+
+5. Generate a new continuation from the rewound state:
    ```bash
    gitloom
    ```
