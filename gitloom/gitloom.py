@@ -244,10 +244,10 @@ def main():
             commit_changes(repo, storage_file, "create empty file")
         # if file exists but is not tracked, add it
         elif repo.git.status(storage_file, porcelain=True).startswith('??'):
-            print(f"Debug: File status: {repo.git.status(storage_file, porcelain=True)}")  # Add this line
+            # print(f"Debug: File status: {repo.git.status(storage_file, porcelain=True)}")  # Add this line
             commit_changes(repo, storage_file, "add existing file")
-        else:
-            print(f"Debug: File exists but not untracked. Status: {repo.git.status(storage_file, porcelain=True)}")  # Add this line
+        # else:
+        #     print(f"Debug: File exists but not untracked. Status: {repo.git.status(storage_file, porcelain=True)}")  # Add this line
 
         if input_text:
             # append input to file
