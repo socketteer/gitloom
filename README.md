@@ -1,6 +1,6 @@
 # GitLoom
 
-GitLoom is a command-line tool that generates text continuations using the Anthropic API (Claude models) and manages different versions of the text using Git. It automatically creates branches for new continuations, allowing you to explore multiple paths of text generation. You can rewind to earlier versions of the text using standard Git commands.
+GitLoom is a command-line tool that generates text continuations using the Anthropic API (Claude models) and manages different versions of the text using Git. It supports both standard text generation and chat modes, and automatically creates branches for new continuations, allowing you to explore multiple paths of text generation.
 
 ---
 
@@ -16,16 +16,12 @@ For example:
 # Good: Create separate directories for different projects
 mkdir my-story
 cd my-story
-gitloom "Once upon a time..."
+gitloom "Once upon a time"
 
 # Later, for a different project:
-mkdir my-essay
-cd my-essay
-gitloom "The impact of AI..."
-
-# Bad: Don't run in an existing Git repository
-cd my-existing-git-project  # Don't do this!
-gitloom  # This would conflict with your existing .git directory
+mkdir my-chat
+cd my-chat
+gitloom --mode chat "Hello, Claude!"
 ```
 
 ---
@@ -47,132 +43,94 @@ gitloom  # This would conflict with your existing .git directory
    export ANTHROPIC_API_KEY="your-api-key"
    ```
 
+## **Modes**
 
-## **What GitLoom Does**
+GitLoom supports two modes of operation:
 
-1. **Text Continuation**:
-   - GitLoom uses the Anthropic API to generate continuations of a text file.
-   - It appends the continuation to the file and commits the changes to a Git repository.
+1. **Base Mode** (default):
+   - Generates continuations of text files
+   - Uses untitled.txt by default
+   - Each continuation is appended to the existing text
 
-2. **Git Integration**:
-   - GitLoom initializes a Git repository if one doesn’t already exist.
-   - It automatically creates new branches for continuations when you’re in a detached HEAD state (e.g., after rewinding to an earlier commit).
-   - Each branch is named based on the first 10 characters of the continuation and a timestamp (e.g., `branch_HelloWor_20231025_1530`).
+2. **Chat Mode**:
+   - Maintains a conversation with Claude
+   - Uses chat.jsonl by default
+   - Stores conversation history in JSONL format
 
-3. **Dry Run Mode**:
-   - You can use the `--dry-run` option to generate a continuation without modifying the file or committing changes.
+## **Settings**
 
----
+GitLoom can be configured using a settings.json file in your working directory. Example settings:
 
-## **How to Run GitLoom**
-
-### **Basic Usage**
-1. Run the command:
-   ```bash
-   gitloom
-   ```
-   - By default, it reads from and writes to a file named `untitled.txt`.
-
-2. Specify a different file:
-   ```bash
-   gitloom --file myfile.txt
-   ```
-
-3. Provide initial text:
-   ```bash
-   gitloom "This is the starting text."
-   ```
-
-4. Use dry-run mode (no changes to the file or repository):
-   ```bash
-   gitloom --dry-run
-   ```
-
----
-
-## **How to Rewind the Text**
-
-GitLoom uses Git to manage different versions of the text. You can use standard Git commands to rewind to earlier versions.
-
-### **1. View Commit History**
-To see the commit history, including branch names and commit messages:
-```bash
-git log --oneline --graph --all
+```json
+{
+    "model": "claude-3-5-sonnet-20241022",
+    "temperature": 1.0,
+    "max_tokens": 1024,
+    "system": "Custom system prompt",
+    "mode": "base",
+    "file": "custom.txt"
+}
 ```
-
-### **2. Checkout an Earlier Commit**
-To rewind to an earlier commit, use `git checkout` with the commit hash:
-```bash
-git checkout abc1234
-```
-
-### **3. Checkout the nth Previous Commit**
-To rewind to the nth previous commit, use `HEAD~n`:
-```bash
-git checkout HEAD~3
-```
-This will rewind to the 3rd previous commit.
-
-### **4. Checkout a Branch**
-To switch to a specific branch:
-```bash
-git checkout branch_HelloWor_20231025_1530
-```
-
-### **5. Return to the Latest Commit**
-To return to the latest commit on the main branch:
-```bash
-git checkout main
-```
-
-### **6. Create a New Branch**
-If you want to explore a new continuation from an earlier commit, create a new branch:
-```bash
-git checkout -b new-branch-name
-```
-
----
-
-## **Example Workflow**
-
-1. Generate a continuation:
-   ```bash
-   gitloom
-   ```
-
-2. View the commit history:
-   ```bash
-   git log --oneline --graph --all
-   ```
-
-3. Rewind to the 2nd previous commit:
-   ```bash
-   git checkout HEAD~2
-   ```
-
-4. Check the full text of the rewound state:
-   ```bash
-   cat untitled.txt
-   ```
-
-5. Generate a new continuation from the rewound state:
-   ```bash
-   gitloom
-   ```
-
----
 
 ## **Command-Line Options**
 
 | Option            | Description                                      |
 |-------------------|--------------------------------------------------|
-| `--file`, `-f`    | File to read from/write to (default: `untitled.txt`). |
-| `--model`, `-m`   | Model to use for text generation (default: `claude-3-5-sonnet-20241022`). |
-| `--temperature`, `-t` | Temperature for text generation (default: `1.0`). |
-| `--max-tokens`, `-mt` | Maximum number of tokens to generate (default: `1024`). |
-| `--system`, `-s`  | System prompt for the model (default: CLI simulation mode). |
-| `--user-message`, `-u` | Content of the user message (default: `<cmd>cat untitled.txt</cmd>`). |
-| `--dry-run`, `-d` | Do not edit the file or commit changes, just print the continuation. |
+| `--mode`          | Mode to use: "base" or "chat" (default: "base") |
+| `--settings`      | Path to settings JSON file |
+| `--file`, `-f`    | File to read from/write to (default depends on mode) |
+| `--model`, `-m`   | Model to use for text generation |
+| `--temperature`, `-t` | Temperature for text generation (default: 1.0) |
+| `--max-tokens`, `-mt` | Maximum number of tokens to generate (default: 1024) |
+| `--system`, `-s`  | System prompt for the model |
+| `--user-message`, `-u` | Content of the user message (base mode only) |
+| `--dry-run`, `-d` | Do not edit the file or commit changes, just print the continuation |
+
+## **Examples**
+
+### Base Mode
+```bash
+# Start a new text file
+gitloom "Once upon a time"
+
+# Continue existing text
+gitloom
+
+# Use a custom file
+gitloom --file story.txt "Chapter 1"
+```
+
+### Chat Mode
+```bash
+# Start a new chat
+gitloom --mode chat "Hello, Claude!"
+
+# Continue existing chat
+gitloom --mode chat "Tell me more"
+
+# Use custom settings
+gitloom --mode chat --temperature 0.7 "Let's be creative"
+```
+
+## **Git Integration**
+
+GitLoom automatically:
+- Initializes a Git repository if one doesn't exist
+- Creates new branches when continuing from an earlier point
+- Commits changes with descriptive messages
+- Names branches based on the content and timestamp
+
+### View History and Rewind
+```bash
+# View commit history
+git log --oneline --graph --all
+
+# Rewind to earlier version
+git checkout <commit-hash>
+
+# Generate new continuation from that point
+gitloom
+```
 
 ---
 
