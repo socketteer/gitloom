@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "anthropic>=0.42",
     "gitpython>=3.1",
+    "jsonlines>=4.0",
 ]
 
 [project.scripts]
